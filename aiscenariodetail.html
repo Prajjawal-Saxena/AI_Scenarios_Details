@@ -1,0 +1,223 @@
+<html>
+  <head>
+    <title>AI Automation Scenario Detail</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background-image: url('https://img.freepik.com/free-vector/wavy-background-concept_23-2148497712.jpg?size=626&ext=jpg');
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: white;
+        transition: background-color 0.8s ease;
+      }
+      body.light-background {
+        background-color: #f2f2f2;
+      }
+      h1 {
+        margin-top: 50px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+      select {
+        margin-top: 20px;
+        padding: 5px;
+      }
+      table {
+        margin: 20px auto;
+        border-collapse: collapse;
+        width: 80%;
+        table-layout: fixed;
+        background-color: rgba(55, 55, 55, 1);
+        color: white;
+      }
+      th, td {
+        border: 1px solid white;
+        padding: 5px;
+        word-wrap: break-word;
+      }
+      th:nth-child(1), td:nth-child(1) {
+        text-align: center;
+        width: 5%;
+      }
+      th:nth-child(2), td:nth-child(2) {
+        text-align: center;
+        width: 10%;
+      }
+      th:nth-child(3), td:nth-child(3) {
+        text-align: left;
+        width: 70%;
+      }
+      th:nth-child(4), td:nth-child(4) {
+        text-align: center;
+        width: 15%;
+      }
+      .summary-table th, .summary-table td {
+        text-align: center;
+        width: 10%;
+      }
+      .summary-table th:nth-child(1), .summary-table td:nth-child(1) {
+        text-align: left;
+        width: 70%;
+      }
+	  canvas {
+      margin-top: 20px;
+      width: 40%; /* Reduced from 80% to 40% */
+      max-width: 800px;
+      height: 300px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin-left: auto;
+      margin-right: auto;
+      display: none; /* Initially hide the chart */
+    }
+    </style>
+  </head>
+  <body>
+    <h1>AI Automation Scenario Detail</h1>
+    <label for="sheetSelect">Select Build:</label>
+    <select id="sheetSelect">
+      <option value="" disabled selected>Select an option</option>
+    </select>
+    <div id="dataTable"></div>
+	<canvas id="myChart"></canvas>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script>
+      const excelFile = 'AI_Automation_Details.xlsx';
+      const sheets = ['KMVC E2E', 'Green1', 'Green2', 'Daily1', 'Summary'];
+
+      const sheetSelect = document.getElementById('sheetSelect');
+      const dataTable = document.getElementById('dataTable');
+	  const myChart = document.getElementById('myChart');
+      const body = document.querySelector('body');
+
+      sheets.forEach(sheet => {
+        const option = document.createElement('option');
+        option.value = sheet;
+        option.text = sheet;
+        sheetSelect.add(option);
+      });
+
+      sheetSelect.addEventListener('change', () => {
+        const selectedSheet = sheetSelect.value;
+      if (selectedSheet) {
+        body.classList.add('light-background');
+        loadExcelData(selectedSheet);
+      } else {
+        body.classList.remove('light-background');
+        dataTable.innerHTML = '';
+        myChart.style.display = 'none';
+      }
+    });
+
+
+      function loadExcelData(sheetName) {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', excelFile, true);
+      xhr.responseType = 'arraybuffer';
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          const data = new Uint8Array(xhr.response);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: null });
+          const htmlTable = generateTableFromJSON(jsonData, sheetName);
+          displayData(htmlTable);
+          if (sheetName === 'Summary') {
+            const chartData = generateChartDataFromJSON(jsonData);
+            createChart(chartData);
+          } else {
+            myChart.style.display = 'none';
+          }
+        }
+      };
+      xhr.send();
+    }
+
+      function generateTableFromJSON(data, sheetName) {
+      let html = '<table';
+      if (sheetName === 'Summary') {
+        html += ' class="summary-table"';
+      }
+      html += '>';
+      html += '<thead><tr>';
+      for (const key in data[0]) {
+        html += `<th>${key}</th>`;
+      }
+      html += '</tr></thead>';
+      html += '<tbody>';
+      for (const row of data) {
+        html += '<tr>';
+        for (const cell in row) {
+          const value = row[cell] !== null && row[cell] !== undefined ? row[cell] : '0';
+          html += `<td>${value}</td>`;
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      return html;
+    }
+
+    function displayData(htmlTable) {
+      dataTable.innerHTML = htmlTable;
+    }
+	function generateChartDataFromJSON(data) {
+      const labels = data.map(row => row.Summary);
+      const datasets = [];
+      const summaryColors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#000080', '#ff8c00', '#808080'];
+
+      for (let i = 1; i < Object.keys(data[0]).length; i++) {
+        const summary = Object.keys(data[0])[i];
+        const summaryData = data.map(row => row[summary] || 0);
+        datasets.push({
+          label: summary,
+          data: summaryData,
+          backgroundColor: summaryColors[i - 1]
+        });
+      }
+
+      return { labels, datasets };
+    }
+
+    function createChart(chartData) {
+      myChart.style.display = 'block';
+      new Chart(myChart, {
+        type: 'bar',
+        data: {
+          labels: chartData.labels,
+          datasets: chartData.datasets
+        },
+        options: {
+          scales: {
+            x: { // Horizontal axis options
+              type: 'category',
+              labels: chartData.labels,
+              tick: {
+                autoSkip: false,
+                maxRotation: 90,
+                minRotation: 0,
+                font: {
+                  size: 10,
+                  weight: 'bold'
+                }
+              }
+            },
+            y: {
+              beginAtZero: true,
+              stepSize: 2
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+    }
+    </script>
+  </body>
+</html>
