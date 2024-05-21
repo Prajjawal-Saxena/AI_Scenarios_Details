@@ -1,8 +1,9 @@
+<!DOCTYPE html>
 <html>
-  <head>
-    <title>AI Automation Scenario Detail</title>
-    <style>
-      body {
+<head>
+  <title>AI Automation Scenario Detail</title>
+  <style>
+    body {
         font-family: Arial, sans-serif;
         text-align: center;
         background-image: url('https://img.freepik.com/free-vector/wavy-background-concept_23-2148497712.jpg?size=626&ext=jpg');
@@ -73,36 +74,58 @@
       margin-right: auto;
       display: none; /* Initially hide the chart */
     }
-    </style>
-  </head>
-  <body>
-    <h1>AI Automation Scenario Detail</h1>
+  </style>
+</head>
+<body>
+  <h1>AI Automation Scenario Detail</h1>
+  <div class="dropdown-container">
     <label for="sheetSelect">Select Build:</label>
     <select id="sheetSelect">
       <option value="" disabled selected>Select an option</option>
     </select>
-    <div id="dataTable"></div>
-	<canvas id="myChart"></canvas>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
-    <script>
-      const excelFile = 'AI_Automation_Details.xlsx';
-      const sheets = ['KMVC E2E', 'Green1', 'Green2', 'Daily1', 'Summary'];
 
-      const sheetSelect = document.getElementById('sheetSelect');
-      const dataTable = document.getElementById('dataTable');
-	  const myChart = document.getElementById('myChart');
-      const body = document.querySelector('body');
+    <label for="historySelect">Build History:</label>
+    <select id="historySelect">
+      <option value="" disabled selected>Select an option</option>
+      <option value="Green1 Historic Data">Green1 Historic Data</option>
+      <option value="Green2 Historic Data">Green2 Historic Data</option>
+      <option value="Daily1 Historic Data">Daily1 Historic Data</option>
+      <option value="KMVC Historic Data">KMVC Historic Data</option>
+    </select>
 
-      sheets.forEach(sheet => {
-        const option = document.createElement('option');
-        option.value = sheet;
-        option.text = sheet;
-        sheetSelect.add(option);
-      });
+    <label for="chartTypeSelect">Select Chart Type:</label>
+    <select id="chartTypeSelect">
+      <option value="bar">Bar</option>
+      <option value="line">Line</option>
+      <option value="pie">Pie</option>
+    </select>
+  </div>
 
-      sheetSelect.addEventListener('change', () => {
-        const selectedSheet = sheetSelect.value;
+  <div id="dataTable"></div>
+  <canvas id="myChart"></canvas>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+  <script>
+    const excelFile = 'AI_Automation_Details.xlsx';
+    const sheets = ['KMVC E2E', 'Green1', 'Green2', 'Daily1', 'Summary'];
+
+    const sheetSelect = document.getElementById('sheetSelect');
+    const historySelect = document.getElementById('historySelect');
+    const chartTypeSelect = document.getElementById('chartTypeSelect');
+    const dataTable = document.getElementById('dataTable');
+    const myChart = document.getElementById('myChart');
+    const body = document.querySelector('body');
+
+    sheets.forEach(sheet => {
+      const option = document.createElement('option');
+      option.value = sheet;
+      option.text = sheet;
+      sheetSelect.add(option);
+    });
+
+    sheetSelect.addEventListener('change', () => {
+      const selectedSheet = sheetSelect.value;
       if (selectedSheet) {
         body.classList.add('light-background');
         loadExcelData(selectedSheet);
@@ -113,8 +136,7 @@
       }
     });
 
-
-      function loadExcelData(sheetName) {
+    function loadExcelData(sheetName) {
       const xhr = new XMLHttpRequest();
       xhr.open('GET', excelFile, true);
       xhr.responseType = 'arraybuffer';
@@ -137,7 +159,7 @@
       xhr.send();
     }
 
-      function generateTableFromJSON(data, sheetName) {
+    function generateTableFromJSON(data, sheetName) {
       let html = '<table';
       if (sheetName === 'Summary') {
         html += ' class="summary-table"';
@@ -164,7 +186,8 @@
     function displayData(htmlTable) {
       dataTable.innerHTML = htmlTable;
     }
-	function generateChartDataFromJSON(data) {
+
+    function generateChartDataFromJSON(data) {
       const labels = data.map(row => row.Summary);
       const datasets = [];
       const summaryColors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#000080', '#ff8c00', '#808080'];
@@ -192,7 +215,7 @@
         },
         options: {
           scales: {
-            x: { // Horizontal axis options
+            x: {
               type: 'category',
               labels: chartData.labels,
               tick: {
@@ -218,6 +241,6 @@
         }
       });
     }
-    </script>
-  </body>
+  </script>
+</body>
 </html>
