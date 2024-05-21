@@ -4,71 +4,75 @@
   <title>AI Automation Scenario Detail</title>
   <style>
     body {
-        font-family: Arial, sans-serif;
-        text-align: center;
-        background-image: url('https://img.freepik.com/free-vector/wavy-background-concept_23-2148497712.jpg?size=626&ext=jpg');
-        background-repeat: no-repeat;
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-        color: white;
-        transition: background-color 0.8s ease;
-      }
-      body.light-background {
-        background-color: #f2f2f2;
-      }
-      h1 {
-        margin-top: 50px;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-      }
-      select {
-        margin-top: 20px;
-        padding: 5px;
-      }
-      table {
-        margin: 20px auto;
-        border-collapse: collapse;
-        width: 80%;
-        table-layout: fixed;
-        background-color: rgba(55, 55, 55, 1);
-        color: white;
-      }
-      th, td {
-        border: 1px solid white;
-        padding: 5px;
-        word-wrap: break-word;
-      }
-      th:nth-child(1), td:nth-child(1) {
-        text-align: center;
-        width: 10%;
-      }
-      th:nth-child(2), td:nth-child(2) {
-        text-align: center;
-        width: 10%;
-      }
-      th:nth-child(3), td:nth-child(3) {
-        text-align: left;
-        width: 70%;
-      }
-      th:nth-child(4), td:nth-child(4) {
-        text-align: center;
-        width: 15%;
-      }
-      th:nth-child(5), td:nth-child(5) {
-        text-align: center;
-        width: 15%;
-      }
-      .summary-table th, .summary-table td {
-        text-align: center;
-        width: 10%;
-      }
-      .summary-table th:nth-child(1), .summary-table td:nth-child(1) {
-        text-align: left;
-        width: 70%;
-      }
-	  canvas {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-image: url('https://img.freepik.com/free-vector/wavy-background-concept_23-2148497712.jpg?size=626&ext=jpg');
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: white;
+      transition: background-color 0.8s ease;
+    }
+    body.light-background {
+      background-color: #f2f2f2;
+    }
+    h1 {
+      margin-top: 50px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+    .dropdown-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    select {
       margin-top: 20px;
-      width: 40%; /* Reduced from 80% to 40% */
+      padding: 10px;
+      font-size: 16px;
+    }
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 80%;
+      table-layout: fixed;
+      background-color: rgba(55, 55, 55, 1);
+      color: white;
+    }
+    th, td {
+      border: 1px solid white;
+      padding: 5px;
+      word-wrap: break-word;
+    }
+    th:nth-child(1), td:nth-child(1) {
+      text-align: center;
+      width: 10%;
+    }
+    th:nth-child(2), td:nth-child(2) {
+      text-align: center;
+      width: 10%;
+    }
+    th:nth-child(3), td:nth-child(3) {
+      text-align: left;
+      width: 70%;
+    }
+    th:nth-child(4), td:nth-child(4) {
+      text-align: center;
+      width: 15%;
+    }
+    .summary-table th, .summary-table td {
+      text-align: center;
+      width: 10%;
+    }
+    .summary-table th:nth-child(1), .summary-table td:nth-child(1) {
+      text-align: left;
+      width: 70%;
+    }
+    canvas {
+      margin-top: 20px;
+      width: 40%;
       max-width: 800px;
       height: 300px;
       background-color: white;
@@ -76,29 +80,22 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       margin-left: auto;
       margin-right: auto;
-      display: none; /* Initially hide the chart */
+      display: none;
     }
   </style>
 </head>
 <body>
   <h1>AI Automation Scenario Detail</h1>
   <div class="dropdown-container">
-<!--     <label for="sheetSelect">Select Build:</label>
-    <select id="sheetSelect">
-      <option value="" disabled selected>Select an option</option>
-    </select> -->
-
     <label for="sheetSelect">Select Build:</label>
     <select id="sheetSelect">
       <option value="" disabled selected>Select an option</option>
-      <option value="KMVC E2E">Green1 Historic Data</option>
-      <option value="Green1">Green2 Historic Data</option>
-      <option value="Green2">Daily1 Historic Data</option>
-      <option value="Daily1">KMVC Historic Data</option>
+      <option value="KMVC E2E">KMVC E2E</option>
+      <option value="Green1">Green1</option>
+      <option value="Green2">Green2</option>
+      <option value="Daily1">Daily1</option>
     </select>
-	  </div>
 
- <div class="dropdown-container">
     <label for="historySelect">Build History:</label>
     <select id="historySelect">
       <option value="" disabled selected>Select an option</option>
@@ -107,13 +104,6 @@
       <option value="Daily1 Historic Data">Daily1 Historic Data</option>
       <option value="KMVC Historic Data">KMVC Historic Data</option>
     </select>
-
-<!--     <label for="chartTypeSelect">Select Chart Type:</label>
-    <select id="chartTypeSelect">
-      <option value="bar">Bar</option>
-      <option value="line">Line</option>
-      <option value="pie">Pie</option>
-    </select> -->
   </div>
 
   <div id="dataTable"></div>
@@ -123,45 +113,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
   <script>
     const excelFile = 'AI_Automation_Details.xlsx';
-    const sheets = ['KMVC E2E', 'Green1', 'Green2', 'Daily1', 'Summary', 'Green1 Historic Data'];
+    const sheets = ['KMVC E2E', 'Green1', 'Green2', 'Daily1', 'Summary', 'Green1 Historic Data', 'Green2 Historic Data', 'Daily1 Historic Data', 'KMVC Historic Data'];
 
     const sheetSelect = document.getElementById('sheetSelect');
     const historySelect = document.getElementById('historySelect');
-    const chartTypeSelect = document.getElementById('chartTypeSelect');
     const dataTable = document.getElementById('dataTable');
     const myChart = document.getElementById('myChart');
     const body = document.querySelector('body');
-
-    sheets.forEach(sheet => {
-      const option = document.createElement('option');
-      option.value = sheet;
-      option.text = sheet;
-      sheetSelect.add(option);
-    });
-
-    sheetSelect.addEventListener('change', () => {
-      const selectedSheet = sheetSelect.value;
-      if (selectedSheet) {
-        body.classList.add('light-background');
-        loadExcelData(selectedSheet);
-      } else {
-        body.classList.remove('light-background');
-        dataTable.innerHTML = '';
-        myChart.style.display = 'none';
-      }
-    });
-
-    historySelect.addEventListener('change', () => {
-      const selectedHistory = historySelect.value;
-      if (selectedHistory) {
-        body.classList.add('light-background');
-        loadExcelData(selectedHistory);
-      } else {
-        body.classList.remove('light-background');
-        dataTable.innerHTML = '';
-        myChart.style.display = 'none';
-      }
-    });
 
     function loadExcelData(sheetName) {
       const xhr = new XMLHttpRequest();
@@ -245,7 +203,7 @@
             x: {
               type: 'category',
               labels: chartData.labels,
-              tick: {
+              ticks: {
                 autoSkip: false,
                 maxRotation: 90,
                 minRotation: 0,
@@ -268,6 +226,30 @@
         }
       });
     }
+
+    sheetSelect.addEventListener('change', () => {
+      const selectedSheet = sheetSelect.value;
+      if (selectedSheet) {
+        body.classList.add('light-background');
+        loadExcelData(selectedSheet);
+      } else {
+        body.classList.remove('light-background');
+        dataTable.innerHTML = '';
+        myChart.style.display = 'none';
+      }
+    });
+
+    historySelect.addEventListener('change', () => {
+      const selectedHistory = historySelect.value;
+      if (selectedHistory) {
+        body.classList.add('light-background');
+        loadExcelData(selectedHistory);
+      } else {
+        body.classList.remove('light-background');
+        dataTable.innerHTML = '';
+        myChart.style.display = 'none';
+      }
+    });
   </script>
 </body>
 </html>
