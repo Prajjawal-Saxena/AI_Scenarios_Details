@@ -98,6 +98,12 @@
       margin-right: auto;
       display: none;
     }
+    input.filter {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 5px;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
@@ -155,14 +161,16 @@
           } else {
             myChart.style.display = 'none';
           }
+          if (isHistory) {
+            addFilterToTable();
+          }
         }
       };
       xhr.send();
     }
 
     function generateTableFromJSON(data, isHistory) {
-      let html = `<table${isHistory ? ' class="history-table"' : ''}`;
-      html += '>';
+      let html = `<table${isHistory ? ' class="history-table"' : ''}>`;
       html += '<thead><tr>';
       for (const key in data[0]) {
         html += `<th>${key}</th>`;
@@ -252,7 +260,31 @@
         for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
         return buf;
       }
-     
+
+    function addFilterToTable() {
+      const table = dataTable.querySelector('table');
+      const ths = table.querySelectorAll('th');
+      ths.forEach((th, index) => {
+        const input = document.createElement('input');
+        input.className = 'filter';
+        input.placeholder = `Filter ${th.innerText}`;
+        input.addEventListener('keyup', () => {
+          filterTable(table, index, input.value);
+        });
+        th.appendChild(input);
+      });
+    }
+
+    function filterTable(table, colIndex, filterValue) {
+      const rows = table.querySelectorAll('tbody tr');
+      rows.forEach(row => {
+        const cell = row.cells[colIndex];
+        if (cell) {
+          const text = cell.textContent || cell.innerText;
+          row.style.display = text.includes(filterValue) ? '' : 'none';
+        }
+      });
+    }
       const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
@@ -273,7 +305,6 @@
         body.classList.remove('light-background');
         dataTable.innerHTML = '';
         myChart.style.display = 'none';
-        document.getElementById('downloadButton').style.display = 'none';
       }
     });
 
@@ -286,7 +317,6 @@
         body.classList.remove('light-background');
         dataTable.innerHTML = '';
         myChart.style.display = 'none';
-        document.getElementById('downloadButton').style.display = 'none';
       }
     });
   </script>
