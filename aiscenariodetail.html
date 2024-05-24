@@ -75,8 +75,8 @@
       width: 20%;
     }
     .history-table th:nth-child(3), .history-table td:nth-child(3) {
-      text-align: left;
-      width: 35%;
+      text-align: center;
+      width: 15%;
     }
     .summary-table th, .summary-table td {
       text-align: center;
@@ -98,11 +98,12 @@
       margin-right: auto;
       display: none;
     }
-    input.filter {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 5px;
-      margin-top: 5px;
+    #downloadButton {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 10px;
+      display: none;
     }
   </style>
 </head>
@@ -128,13 +129,14 @@
     </select>
   </div>
 
-  <button id="downloadButton" style="position: absolute; top: 20px; right: 20px; padding: 10px; display: none;">Download Excel</button>
+  <button id="downloadButton">Download Excel</button>
 
   <div id="dataTable"></div>
   <canvas id="myChart"></canvas>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tablefilter@2.5.0/dist/tablefilter/tablefilter.js"></script>
   <script>
     const excelFile = 'AI_Automation_Details.xlsx';
     const sheetSelect = document.getElementById('sheetSelect');
@@ -142,6 +144,7 @@
     const dataTable = document.getElementById('dataTable');
     const myChart = document.getElementById('myChart');
     const body = document.querySelector('body');
+    const downloadButton = document.getElementById('downloadButton');
 
     function loadExcelData(sheetName, isHistory = false) {
       const xhr = new XMLHttpRequest();
@@ -154,15 +157,12 @@
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: null });
           const htmlTable = generateTableFromJSON(jsonData, isHistory);
-          displayData(htmlTable);
+          displayData(htmlTable, isHistory);
           if (sheetName === 'Summary') {
             const chartData = generateChartDataFromJSON(jsonData);
             createChart(chartData);
           } else {
             myChart.style.display = 'none';
-          }
-          if (isHistory) {
-            addFilterToTable();
           }
         }
       };
@@ -170,7 +170,8 @@
     }
 
     function generateTableFromJSON(data, isHistory) {
-      let html = `<table${isHistory ? ' class="history-table"' : ''}>`;
+      let html = `<table${isHistory ? ' class="history-table"' : ''}`;
+      html += '>';
       html += '<thead><tr>';
       for (const key in data[0]) {
         html += `<th>${key}</th>`;
@@ -189,9 +190,15 @@
       return html;
     }
 
-    function displayData(htmlTable) {
+    function displayData(htmlTable, isHistory) {
       dataTable.innerHTML = htmlTable;
-      document.getElementById('downloadButton').style.display = 'block';
+      if (isHistory) {
+        const tf = new TableFilter(dataTable.querySelector('table'), {
+          base_path: 'https://cdn.jsdelivr.net/npm/tablefilter@2.5.0/dist/tablefilter/'
+        });
+        tf.init();
+      }
+      downloadButton.style.display = 'block';
     }
 
     function generateChartDataFromJSON(data) {
@@ -253,48 +260,27 @@
       const table = document.querySelector('#dataTable table');
       const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
       const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
-     
+
       function s2ab(s) {
         const buf = new ArrayBuffer(s.length);
         const view = new Uint8Array(buf);
-        for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+        for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xff;
         return buf;
       }
 
-    function addFilterToTable() {
-      const table = dataTable.querySelector('table');
-      const ths = table.querySelectorAll('th');
-      ths.forEach((th, index) => {
-        const input = document.createElement('input');
-        input.className = 'filter';
-        input.placeholder = `Filter ${th.innerText}`;
-        input.addEventListener('keyup', () => {
-          filterTable(table, index, input.value);
-        });
-        th.appendChild(input);
-      });
-    }
+      const blob = new Blob([s2ab(wbout)], { type: 'application/octet-stream' });
+      const fileName = 'AI_Automation_Details.xlsx';
 
-    function filterTable(table, colIndex, filterValue) {
-      const rows = table.querySelectorAll('tbody tr');
-      rows.forEach(row => {
-        const cell = row.cells[colIndex];
-        if (cell) {
-          const text = cell.textContent || cell.innerText;
-          row.style.display = text.includes(filterValue) ? '' : 'none';
-        }
-      });
+      if (navigator.msSaveBlob) {
+        navigator.msSaveBlob(blob, fileName);
+      } else {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }
     }
-      const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = "data.xlsx";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    document.getElementById('downloadButton').addEventListener('click', downloadExcel);
 
     sheetSelect.addEventListener('change', () => {
       const selectedSheet = sheetSelect.value;
@@ -318,6 +304,10 @@
         dataTable.innerHTML = '';
         myChart.style.display = 'none';
       }
+    });
+
+    downloadButton.addEventListener('click', () => {
+      downloadExcel();
     });
   </script>
 </body>
