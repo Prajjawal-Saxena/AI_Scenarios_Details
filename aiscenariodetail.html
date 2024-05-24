@@ -21,17 +21,9 @@
       margin-top: 50px;
       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     }
-/*     .dropdown-container {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    } */
     select {
       margin-top: 20px;
       padding: 5px;
-/*       font-size: 16px; */
     }
     table {
       margin: 20px auto;
@@ -52,7 +44,7 @@
     }
     th:nth-child(2), td:nth-child(2) {
       text-align: center;
-      width: 13%;
+      width: 16%;
     }
     th:nth-child(3), td:nth-child(3) {
       text-align: left;
@@ -64,7 +56,7 @@
     }
     th:nth-child(5), td:nth-child(5) {
       text-align: center;
-      width: 15%;
+      width: 23%;
     }
     th:nth-child(6), td:nth-child(6) {
       text-align: center;
@@ -80,11 +72,11 @@
     }
     th:nth-child(9), td:nth-child(9) {
       text-align: center;
-      width: 23%;
+      width: 20%;
     }
     .history-table th:nth-child(3), .history-table td:nth-child(3) {
       text-align: left;
-      width: 40%;
+      width: 35%;
     }
     .summary-table th, .summary-table td {
       text-align: center;
@@ -105,6 +97,12 @@
       margin-left: auto;
       margin-right: auto;
       display: none;
+    }
+    input.filter {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 5px;
+      margin-top: 5px;
     }
   </style>
 </head>
@@ -161,14 +159,16 @@
           } else {
             myChart.style.display = 'none';
           }
+          if (isHistory) {
+            addFilterToTable();
+          }
         }
       };
       xhr.send();
     }
 
     function generateTableFromJSON(data, isHistory) {
-      let html = `<table${isHistory ? ' class="history-table"' : ''}`;
-      html += '>';
+      let html = `<table${isHistory ? ' class="history-table"' : ''}>`;
       html += '<thead><tr>';
       for (const key in data[0]) {
         html += `<th>${key}</th>`;
@@ -242,6 +242,31 @@
               position: 'bottom'
             }
           }
+        }
+      });
+    }
+
+    function addFilterToTable() {
+      const table = dataTable.querySelector('table');
+      const ths = table.querySelectorAll('th');
+      ths.forEach((th, index) => {
+        const input = document.createElement('input');
+        input.className = 'filter';
+        input.placeholder = `Filter ${th.innerText}`;
+        input.addEventListener('keyup', () => {
+          filterTable(table, index, input.value);
+        });
+        th.appendChild(input);
+      });
+    }
+
+    function filterTable(table, colIndex, filterValue) {
+      const rows = table.querySelectorAll('tbody tr');
+      rows.forEach(row => {
+        const cell = row.cells[colIndex];
+        if (cell) {
+          const text = cell.textContent || cell.innerText;
+          row.style.display = text.includes(filterValue) ? '' : 'none';
         }
       });
     }
