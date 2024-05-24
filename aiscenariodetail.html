@@ -98,12 +98,6 @@
       margin-right: auto;
       display: none;
     }
-    input.filter {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 5px;
-      margin-top: 5px;
-    }
   </style>
 </head>
 <body>
@@ -127,6 +121,8 @@
       <option value="KMVC Historic Data">KMVC Historic Data</option>
     </select>
   </div>
+
+  <button id="downloadButton" style="position: absolute; top: 20px; right: 20px; padding: 10px; display: none;">Download Excel</button>
 
   <div id="dataTable"></div>
   <canvas id="myChart"></canvas>
@@ -159,16 +155,14 @@
           } else {
             myChart.style.display = 'none';
           }
-          if (isHistory) {
-            addFilterToTable();
-          }
         }
       };
       xhr.send();
     }
 
     function generateTableFromJSON(data, isHistory) {
-      let html = `<table${isHistory ? ' class="history-table"' : ''}>`;
+      let html = `<table${isHistory ? ' class="history-table"' : ''}`;
+      html += '>';
       html += '<thead><tr>';
       for (const key in data[0]) {
         html += `<th>${key}</th>`;
@@ -189,6 +183,7 @@
 
     function displayData(htmlTable) {
       dataTable.innerHTML = htmlTable;
+      document.getElementById('downloadButton').style.display = 'block';
     }
 
     function generateChartDataFromJSON(data) {
@@ -246,30 +241,28 @@
       });
     }
 
-    function addFilterToTable() {
-      const table = dataTable.querySelector('table');
-      const ths = table.querySelectorAll('th');
-      ths.forEach((th, index) => {
-        const input = document.createElement('input');
-        input.className = 'filter';
-        input.placeholder = `Filter ${th.innerText}`;
-        input.addEventListener('keyup', () => {
-          filterTable(table, index, input.value);
-        });
-        th.appendChild(input);
-      });
+    function downloadExcel() {
+      const table = document.querySelector('#dataTable table');
+      const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+      const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+     
+      function s2ab(s) {
+        const buf = new ArrayBuffer(s.length);
+        const view = new Uint8Array(buf);
+        for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+        return buf;
+      }
+     
+      const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = "data.xlsx";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
-    function filterTable(table, colIndex, filterValue) {
-      const rows = table.querySelectorAll('tbody tr');
-      rows.forEach(row => {
-        const cell = row.cells[colIndex];
-        if (cell) {
-          const text = cell.textContent || cell.innerText;
-          row.style.display = text.includes(filterValue) ? '' : 'none';
-        }
-      });
-    }
+    document.getElementById('downloadButton').addEventListener('click', downloadExcel);
 
     sheetSelect.addEventListener('change', () => {
       const selectedSheet = sheetSelect.value;
@@ -280,6 +273,7 @@
         body.classList.remove('light-background');
         dataTable.innerHTML = '';
         myChart.style.display = 'none';
+        document.getElementById('downloadButton').style.display = 'none';
       }
     });
 
@@ -292,6 +286,7 @@
         body.classList.remove('light-background');
         dataTable.innerHTML = '';
         myChart.style.display = 'none';
+        document.getElementById('downloadButton').style.display = 'none';
       }
     });
   </script>
